@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍬 我的可爱待办清单</title>
+<style>
+  /* ===== 基础与变量 ===== */
+  :root {
+    --pink: #ffb3c6;
+    --pink-light: #ffe0e8;
+    --pink-dark: #f27a96;
+    --lavender: #c7b8ea;
+    --mint: #b8e8d0;
+    --yellow: #fdeaa8;
+    --bg: #fff5f7;
+    --card: #ffffff;
+    --text: #5a4a5a;
+    --text-light: #9a8a9a;
+    --shadow: 0 4px 20px rgba(255, 179, 198, 0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 20%, #ffe0e8 0%, transparent 45%),
+      radial-gradient(circle at 85% 75%, #e0dcf8 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, #fef3e0 0%, transparent 50%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  /* ===== 装饰性浮动泡泡 ===== */
+  .bubbles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: floatUp 8s ease-in infinite;
+  }
+  .bubble:nth-child(1) { width:60px; height:60px; background:var(--pink); left:10%; animation-delay:0s; }
+  .bubble:nth-child(2) { width:40px; height:40px; background:var(--lavender); left:25%; animation-delay:2s; }
+  .bubble:nth-child(3) { width:80px; height:80px; background:var(--mint); left:50%; animation-delay:4s; }
+  .bubble:nth-child(4) { width:50px; height:50px; background:var(--yellow); left:70%; animation-delay:1s; }
+  .bubble:nth-child(5) { width:35px; height:35px; background:var(--pink-dark); left:85%; animation-delay:5s; }
+  .bubble:nth-child(6) { width:55px; height:55px; background:var(--lavender); left:40%; animation-delay:3s; }
+
+  @keyframes floatUp {
+    0%   { bottom:-100px; opacity:0; transform:translateX(0) scale(0.5); }
+    20%  { opacity:0.3; }
+    80%  { opacity:0.3; }
+    100% { bottom:110%; opacity:0; transform:translateX(60px) scale(1.2); }
+  }
+
+  /* ===== 主卡片 ===== */
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--card);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    padding: 36px 32px 28px;
+    width: 100%;
+    max-width: 460px;
+    border: 2px solid var(--pink-light);
+  }
+
+  /* ===== 头部 ===== */
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .header .mascot {
+    font-size: 52px;
+    animation: bounce 2s ease-in-out infinite;
+    display: block;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+  }
+  .header h1 {
+    font-size: 26px;
+    color: var(--text);
+    margin-top: 4px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .header .subtitle {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  /* ===== 输入区 ===== */
+  .input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .input-row input {
+    flex: 1;
+    padding: 12px 18px;
+    border: 2px solid var(--pink-light);
+    border-radius: 50px;
+    font-size: 15px;
+    color: var(--text);
+    background: #fffafc;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .input-row input::placeholder {
+    color: #d0b8c4;
+  }
+  .input-row input:focus {
+    border-color: var(--pink-dark);
+    box-shadow: 0 0 0 4px rgba(242, 122, 150, 0.12);
+  }
+  .input-row button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
+  }
+  .input-row button:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(242, 122, 150, 0.4);
+  }
+  .input-row button:active {
+    transform: scale(0.95);
+  }
+
+  /* 快捷添加提示 */
+  .quick-tips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .quick-tip {
+    font-size: 12px;
+    background: var(--pink-light);
+    color: var(--pink-dark);
+    padding: 5px 14px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    border: none;
+  }
+  .quick-tip:hover {
+    background: var(--pink);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  /* ===== 过滤器 ===== */
+  .filters {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .filters button {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    border-radius: 50px;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-weight: 500;
+  }
+  .filters button.active {
+    background: var(--lavender);
+    color: white;
+  }
+  .filters button:hover:not(.active) {
+    background: var(--pink-light);
+    color: var(--pink-dark);
+  }
+
+  /* ===== 统计栏 ===== */
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--text-light);
+  }
+  .stats .count {
+    font-weight: 700;
+    color: var(--pink-dark);
+  }
+  .stats .clear-done {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 12px;
+    transition: color 0.2s;
+  }
+  .stats .clear-done:hover {
+    color: var(--pink-dark);
+  }
+
+  /* ===== 列表 ===== */
+  .todo-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 60px;
+  }
+
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fffafc;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    animation: slideIn 0.35s ease-out;
+  }
+  @keyframes slideIn {
+    from { opacity:0; transform:translateY(-10px) scale(0.95); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+  .todo-item:hover {
+    border-color: var(--pink-light);
+    box-shadow: 0 2px 12px rgba(255, 179, 198, 0.15);
+  }
+  .todo-item.completed .todo-text {
+    text-decoration: line-through;
+    color: var(--text-light);
+  }
+
+  /* 自定义可爱复选框 */
+  .checkbox {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--pink);
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+    font-size: 13px;
+    color: transparent;
+  }
+  .checkbox.checked {
+    background: var(--mint);
+    border-color: var(--mint);
+    color: white;
+  }
+  .checkbox:hover { transform: scale(1.1); }
+
+  .todo-text {
+    flex: 1;
+    font-size: 15px;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .delete-btn {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #d0b8c4;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .delete-btn:hover {
+    background: #fff0f3;
+    color: var(--pink-dark);
+  }
+
+  /* 空状态 */
+  .empty-state {
+    text-align: center;
+    padding: 30px 0;
+    color: var(--text-light);
+  }
+  .empty-state .empty-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 8px;
+    animation: bounce 3s ease-in-out infinite;
+  }
+  .empty-state p {
+    font-size: 14px;
+  }
+
+  /* ===== 底部彩蛋 ===== */
+  .footer-note {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--text-light);
+  }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 500px) {
+    .card { padding: 24px 18px 20px; border-radius: 22px; }
+    .header h1 { font-size: 22px; }
+    .header .mascot { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 浮动泡泡背景 -->
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+</div>
+
+<!-- 主卡片 -->
+<div class="card">
+  <!-- 头部 -->
+  <div class="header">
+    <span class="mascot">🐰</span>
+    <h1>今日待办</h1>
+    <p class="subtitle">把要做的事情都记下来吧～</p>
+  </div>
+
+  <!-- 输入区 -->
+  <div class="input-row">
+    <input type="text" id="todoInput" placeholder="✏️ 写一件想做的事..." maxlength="60">
+    <button id="addBtn" title="添加">✨</button>
+  </div>
+
+  <!-- 快捷添加 -->
+  <div class="quick-tips">
+    <button class="quick-tip">🧹 打扫房间</button>
+    <button class="quick-tip">📖 读书30分钟</button>
+    <button class="quick-tip">🏃 运动一下</button>
+    <button class="quick-tip">💧 喝水</button>
+  </div>
+
+  <!-- 过滤器 -->
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">🌸 全部</button>
+    <button class="filter-btn" data-filter="active">🎀 进行中</button>
+    <button class="filter-btn" data-filter="completed">✅ 已完成</button>
+  </div>
+
+  <!-- 统计栏 -->
+  <div class="stats">
+    <span>已完成 <span class="count" id="doneCount">0</span> / <span id="totalCount">0</span></span>
+    <button class="clear-done" id="clearDone">清空已完成 🧹</button>
+  </div>
+
+  <!-- 待办列表 -->
+  <ul class="todo-list" id="todoList"></ul>
+
+  <!-- 底部 -->
+  <p class="footer-note">💖 点一下圆圈就能标记完成哦</p>
+</div>
+
+<script>
+  // ===== 数据管理 =====
+  const STORAGE_KEY = 'kawaii-todos';
+
+  function loadTodos() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveTodos(todos) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+  }
+
+  let todos = loadTodos();
+  let currentFilter = 'all';
+
+  // ===== DOM 元素 =====
+  const todoInput  = document.getElementById('todoInput');
+  const addBtn     = document.getElementById('addBtn');
+  const todoList   = document.getElementById('todoList');
+  const doneCount  = document.getElementById('doneCount');
+  const totalCount = document.getElementById('totalCount');
+  const clearDone  = document.getElementById('clearDone');
+
+  // ===== 渲染 =====
+  function render() {
+    // 根据过滤器筛选
+    let filtered = todos;
+    if (currentFilter === 'active') {
+      filtered = todos.filter(t => !t.done);
+    } else if (currentFilter === 'completed') {
+      filtered = todos.filter(t => t.done);
+    }
+
+    // 更新统计
+    const done = todos.filter(t => t.done).length;
+    doneCount.textContent = done;
+    totalCount.textContent = todos.length;
+
+    // 渲染列表
+    if (filtered.length === 0) {
+      const messages = {
+        all:       { icon:'📋', text:'还没有待办事项～<br>快写一个吧！' },
+        active:    { icon:'🎉', text:'全部搞定啦！<br>你好棒！' },
+        completed: { icon:'📭', text:'还没有完成的事项～<br>加油哦！' },
+      };
+      const m = messages[currentFilter];
+      todoList.innerHTML = `
+        <li class="empty-state">
+          <span class="empty-icon">${m.icon}</span>
+          <p>${m.text}</p>
+        </li>`;
+    } else {
+      todoList.innerHTML = filtered.map((todo, i) => `
+        <li class="todo-item ${todo.done ? 'completed' : ''}" data-id="${todo.id}">
+          <span class="checkbox ${todo.done ? 'checked' : ''}" data-action="toggle">${todo.done ? '✓' : ''}</span>
+          <span class="todo-text">${escapeHtml(todo.text)}</span>
+          <button class="delete-btn" data-action="delete" title="删除">×</button>
+        </li>
+      `).join('');
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ===== 操作 =====
+  function addTodo(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    if (todos.some(t => t.text === trimmed)) {
+      shakeInput();
+      return; // 去重
+    }
+    todos.unshift({ id: Date.now(), text: trimmed, done: false });
+    saveTodos(todos);
+    todoInput.value = '';
+    todoInput.focus();
+    render();
+  }
+
+  function toggleTodo(id) {
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+      todo.done = !todo.done;
+      saveTodos(todos);
+      render();
+    }
+  }
+
+  function deleteTodo(id) {
+    todos = todos.filter(t => t.id !== id);
+    saveTodos(todos);
+    render();
+  }
+
+  function clearCompleted() {
+    const before = todos.length;
+    todos = todos.filter(t => !t.done);
+    if (todos.length < before) {
+      saveTodos(todos);
+      render();
+    }
+  }
+
+  function shakeInput() {
+    todoInput.style.animation = 'none';
+    todoInput.offsetHeight; // reflow
+    todoInput.style.animation = 'shake 0.4s ease';
+  }
+
+  // shake 动画动态注入
+  const shakeStyle = document.createElement('style');
+  shakeStyle.textContent = `
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%     { transform: translateX(-6px); }
+      50%     { transform: translateX(6px); }
+      75%     { transform: translateX(-4px); }
+    }`;
+  document.head.appendChild(shakeStyle);
+
+  // ===== 事件监听 =====
+  addBtn.addEventListener('click', () => addTodo(todoInput.value));
+  todoInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTodo(todoInput.value);
+  });
+
+  // 快捷添加
+  document.querySelectorAll('.quick-tip').forEach(btn => {
+    btn.addEventListener('click', () => addTodo(btn.textContent.replace(/^[^\s]+\s/, '')));
+  });
+
+  // 列表点击（事件委托）
+  todoList.addEventListener('click', e => {
+    const action = e.target.dataset.action || e.target.closest('[data-action]')?.dataset.action;
+    const li = e.target.closest('.todo-item');
+    if (!li) return;
+    const id = Number(li.dataset.id);
+
+    if (action === 'toggle') toggleTodo(id);
+    else if (action === 'delete') deleteTodo(id);
+  });
+
+  // 过滤器
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  // 清空已完成
+  clearDone.addEventListener('click', clearCompleted);
+
+  // ===== 初始化 =====
+  render();
+  todoInput.focus();
+</script>
+
+</body>
+</html>
